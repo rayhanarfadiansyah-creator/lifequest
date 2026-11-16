@@ -17,6 +17,12 @@ export const characters = [
       agility: 45,
       vitality: 100,
     },
+    basicAttack: {
+  name: "Sword Slash",
+  baseDamage: 10,
+  scalingStat: "strength",
+  multiplier: 0.8,
+},
     skills: [
       {
         id: "shield-bash",
@@ -50,6 +56,12 @@ export const characters = [
       agility: 55,
       vitality: 45,
     },
+    basicAttack: {
+  name: "Arcane Bolt",
+  baseDamage: 8,
+  scalingStat: "intelligence",
+  multiplier: 0.9,
+},
     skills: [
       {
         id: "arcane-blast",
@@ -83,6 +95,12 @@ export const characters = [
       agility: 100,
       vitality: 60,
     },
+    basicAttack: {
+  name: "Quick Shot",
+  baseDamage: 9,
+  scalingStat: "agility",
+  multiplier: 0.85,
+},
     skills: [
       {
         id: "piercing-arrow",
@@ -117,6 +135,12 @@ export const characters = [
       agility: 100,
       vitality: 45,
     },
+    basicAttack: {
+  name: "Shadow Slash",
+  baseDamage: 10,
+  scalingStat: "agility",
+  multiplier: 0.9,
+},
     skills: [
       {
         id: "shadow-strike",
@@ -151,6 +175,12 @@ export const characters = [
       agility: 45,
       vitality: 85,
     },
+    basicAttack: {
+  name: "Holy Strike",
+  baseDamage: 8,
+  scalingStat: "intelligence",
+  multiplier: 0.8,
+},
     skills: [
       {
         id: "healing-light",
@@ -177,9 +207,69 @@ export const characters = [
 ] satisfies CharacterDefinition[];
 
 export const initialCharacterProgress: CharacterProgress[] = [
-  { characterId: "knight", level: 1, xp: 0, isUnlocked: true },
-  { characterId: "mage", level: 1, xp: 0, isUnlocked: true },
-  { characterId: "ranger", level: 1, xp: 0, isUnlocked: false },
-  { characterId: "assassin", level: 1, xp: 0, isUnlocked: false },
-  { characterId: "cleric", level: 1, xp: 0, isUnlocked: false },
+  {
+    characterId: "knight",
+    level: 1,
+    xp: 0,
+    isUnlocked: true,
+    attributePoints: 0,
+    allocatedStats: {
+      strength: 0,
+      intelligence: 0,
+      agility: 0,
+      vitality: 0,
+    },
+  },
+  {
+    characterId: "mage",
+    level: 1,
+    xp: 0,
+    isUnlocked: true,
+    attributePoints: 0,
+    allocatedStats: {
+      strength: 0,
+      intelligence: 0,
+      agility: 0,
+      vitality: 0,
+    },
+  },
+  {
+    characterId: "ranger",
+    level: 1,
+    xp: 0,
+    isUnlocked: false,
+    attributePoints: 0,
+    allocatedStats: {
+      strength: 0,
+      intelligence: 0,
+      agility: 0,
+      vitality: 0,
+    },
+  },
+  {
+    characterId: "assassin",
+    level: 1,
+    xp: 0,
+    isUnlocked: false,
+    attributePoints: 0,
+    allocatedStats: {
+      strength: 0,
+      intelligence: 0,
+      agility: 0,
+      vitality: 0,
+    },
+  },
+  {
+    characterId: "cleric",
+    level: 1,
+    xp: 0,
+    isUnlocked: false,
+    attributePoints: 0,
+    allocatedStats: {
+      strength: 0,
+      intelligence: 0,
+      agility: 0,
+      vitality: 0,
+    },
+  },
 ];

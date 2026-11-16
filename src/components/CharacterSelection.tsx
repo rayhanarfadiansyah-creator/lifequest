@@ -8,15 +8,22 @@ type CharacterSelectionProps = {
     onBack: () => void;
     activeCharacterId: CharacterId;
     onSelect: (characterId: CharacterId) => void;
+    gems: number;
+    unlockedCharacters: CharacterId[];
+    onBuyCharacter: (characterId: CharacterId) => boolean;
 };
 
 export default function CharacterSelection({
     onBack,
     activeCharacterId,
     onSelect,
+    gems,
+    unlockedCharacters,
+    onBuyCharacter,
 }: CharacterSelectionProps) {
     const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId>(activeCharacterId);
+    const [purchaseMessage, setPurchaseMessage] = useState("");
 
     const selectedCharacter = characters.find(
     (character) => character.id === selectedCharacterId
@@ -35,7 +42,7 @@ return (
 ← BACK TO LOBBY
 </button>
     <header className="mb-10 border-b border-yellow-500/20 pb-6">
-        <GemWallet gems={500} />
+        <GemWallet gems={gems} />
         <p className="text-sm uppercase tracking-[0.3em] text-purple-400">
             LIFEQUEST
         </p>
@@ -55,71 +62,66 @@ return (
         (item) => item.characterId === character.id
     );
 
-    const isUnlocked = progress?.isUnlocked ?? false;
+    const isUnlocked = unlockedCharacters.includes(character.id);
     const isSelected = selectedCharacterId === character.id;
 
-    return (
-      <button
+return (
+    <button
         key={character.id}
-        disabled={!isUnlocked}
-        onClick={() => setSelectedCharacterId(character.id)}
+        onClick={() => {
+        setSelectedCharacterId(character.id);
+        setPurchaseMessage("");
+        }}
         className={`group relative flex min-h-[230px] flex-col items-center justify-between overflow-hidden rounded-xl border-2 p-3 transition-all duration-200 ${
-          isSelected
+        isSelected
             ? "border-yellow-400 bg-gradient-to-b from-purple-800 to-gray-950 shadow-[0_0_20px_rgba(250,204,21,0.2)]"
             : "border-gray-700 bg-gradient-to-b from-gray-800 to-gray-950 hover:border-purple-400"
         } ${!isUnlocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-      >
+        >
         <span className="absolute right-2 top-2 text-[10px] font-bold uppercase tracking-wider text-yellow-300">
-          {isUnlocked ? "FREE" : "PREMIUM"}
+            {isUnlocked ? "OWNED" : "PREMIUM"}
         </span>
-
         <img
-          src={character.spritePath}
-          alt={character.name}
-          className="mt-5 h-28 w-28 object-contain"
+            src={character.spritePath}
+            alt={character.name}
+            className="mt-5 h-28 w-28 object-contain"
         />
-
         <div className="text-center">
-          <h2 className="font-black uppercase tracking-wider text-white">
-            {character.name}
-          </h2>
-          <p className="mt-1 text-xs text-purple-300">
-            {character.role}
-          </p>
-
-          {!isUnlocked && (
-            <p className="mt-2 text-xs font-bold text-yellow-400">
-              💎 {character.unlock.priceInGems}
+            <h2 className="font-black uppercase tracking-wider text-white">
+                {character.name}
+            </h2>
+            <p className="mt-1 text-xs text-purple-300">
+                {character.role}
             </p>
-          )}
-
-          {isSelected && (
-            <p className="mt-2 text-[10px] font-bold tracking-widest text-yellow-300">
-              SELECTED
-            </p>
-          )}
+            {!isUnlocked && (
+                <p className="mt-2 text-xs font-bold text-yellow-400">
+                    💎 {character.unlock.priceInGems}
+                </p>
+            )}
+            {isSelected && (
+                <p className="mt-2 text-[10px] font-bold tracking-widest text-yellow-300">
+                    SELECTED
+                </p>
+            )}
         </div>
-      </button>
+    </button>
     );
-  })}
+})}
 </section>
 
 
       {/* CHARACTER DETAILS */}
-      {selectedCharacter && selectedProgress && (
+    {selectedCharacter && selectedProgress && (
         <section className="relative mt-10 overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-[#29203f] via-[#171629] to-[#0c101c] p-6 md:p-8">
-          <p className="text-sm uppercase tracking-widest text-purple-400">
-            Character Details
-          </p>
-
-          <h2 className="mt-2 text-4xl font-black uppercase tracking-widest text-yellow-300">
-  {selectedCharacter.name}
-</h2>
-
-          <p className="mt-1 text-gray-400">
-            {selectedCharacter.description}
-          </p>
-
+            <p className="text-sm uppercase tracking-widest text-purple-400">
+                Character Details
+            </p>
+            <h2 className="mt-2 text-4xl font-black uppercase tracking-widest text-yellow-300">
+                {selectedCharacter.name}
+            </h2>
+            <p className="mt-1 text-gray-400">
+                {selectedCharacter.description}
+            </p>
             <div className="my-8 flex justify-center rounded-xl bg-black/20 py-6">
                 <img
                     src={selectedCharacter.spritePath}
@@ -128,56 +130,87 @@ return (
                 />
             </div>
 
-            <button
-  onClick={() => onSelect(selectedCharacterId)}
-  disabled={!selectedProgress.isUnlocked}
-  className="w-full rounded-xl border-2 border-yellow-400 bg-yellow-500 py-4 font-black tracking-widest text-gray-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"
->
-  USE CHARACTER
+{unlockedCharacters.includes(selectedCharacterId) ? (
+    <button
+        onClick={() => onSelect(selectedCharacterId)}
+        className="w-full rounded-xl border-2 border-yellow-400 bg-yellow-500 py-4 font-black tracking-widest text-gray-950 transition hover:bg-yellow-300"
+        >
+        USE CHARACTER
+    </button>
+) : (
+<button
+    onClick={() => {
+        const price = selectedCharacter.unlock.priceInGems ?? 0;
+        if (gems < price) {
+        setPurchaseMessage(
+            `Not enough Gems! You need ${price - gems} more Gems.`
+        );
+        return;
+    }
+
+    const confirmed = window.confirm(
+        `Buy ${selectedCharacter.name} for ${price} Gems?`
+    );
+    if (!confirmed) return;
+    const success = onBuyCharacter(selectedCharacterId);
+    if (success) {
+    setPurchaseMessage(
+        `${selectedCharacter.name} successfully unlocked!`
+        );
+    } else {
+        setPurchaseMessage("Purchase failed. Please try again.");
+    }
+    }}
+    className="w-full rounded-xl border-2 border-yellow-400 bg-yellow-500 py-4 font-black tracking-widest text-gray-950 transition hover:bg-yellow-300">
+    BUY CHARACTER — 💎 {selectedCharacter.unlock.priceInGems}
 </button>
+)}
 
-          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {Object.entries(selectedCharacter.baseStats).map(
-              ([stat, value]) => (
-                <div key={stat} className="rounded-lg bg-gray-800 p-3">
-                  <p className="text-xs capitalize text-gray-400">
-                    {stat}
-                  </p>
-                  <p className="mt-1 text-xl font-bold">{value}</p>
-                </div>
-              )
-            )}
-          </div>
+{purchaseMessage && (
+<p className="mt-4 text-center font-bold text-yellow-300">
+    {purchaseMessage}
+</p>
+)}
 
-          <h3 className="mb-3 mt-6 text-xl font-bold">Skills</h3>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            {selectedCharacter.skills.map((skill) => (
-              <div key={skill.id} className="rounded-lg bg-gray-800 p-4">
-                <h4 className="font-bold text-purple-300">
-                  {skill.name}
-                </h4>
-                <p className="mt-1 text-sm text-gray-400">
-                  {skill.description}
-                </p>
-                <p className="mt-3 text-xs text-gray-500">
-                  Cooldown: {skill.cooldown}s · Mana: {skill.manaCost}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 border-t border-gray-700 pt-4">
-            <p className="text-gray-400">Character Progress</p>
-            <p className="mt-1 text-xl font-bold">
-              Level {selectedProgress.level}
+<div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+    {Object.entries(selectedCharacter.baseStats).map(
+    ([stat, value]) => (
+        <div key={stat} className="rounded-lg bg-gray-800 p-3">
+            <p className="text-xs capitalize text-gray-400">
+                {stat}
             </p>
-            <p className="text-purple-300">
-              {selectedProgress.xp} XP
-            </p>
-          </div>
-        </section>
-      )}
+            <p className="mt-1 text-xl font-bold">{value}</p>
+        </div>
+    )
+    )}
+</div>
+<h3 className="mb-3 mt-6 text-xl font-bold">Skills</h3>
+<div className="grid gap-3 md:grid-cols-2">
+    {selectedCharacter.skills.map((skill) => (
+    <div key={skill.id} className="rounded-lg bg-gray-800 p-4">
+        <h4 className="font-bold text-purple-300">
+            {skill.name}
+        </h4>
+        <p className="mt-1 text-sm text-gray-400">
+            {skill.description}
+        </p>
+        <p className="mt-3 text-xs text-gray-500">
+            Cooldown: {skill.cooldown}s · Mana: {skill.manaCost}
+        </p>
+    </div>
+    ))}
+</div>
+<div className="mt-6 border-t border-gray-700 pt-4">
+    <p className="text-gray-400">Character Progress</p>
+    <p className="mt-1 text-xl font-bold">
+        Level {selectedProgress.level}
+    </p>
+    <p className="text-purple-300">
+        {selectedProgress.xp} XP
+    </p>
+</div>
+</section>
+    )}
     </main>
-  );
+);
 }

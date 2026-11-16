@@ -3,9 +3,16 @@
 
 import { useEffect, useState } from "react";
 
+type PlayerAction =
+  | "idle"
+  | "walk"
+  | "attack"
+  | "skill1"
+  | "skill2";
+
 type PlayerSpriteProps = {
   character: string;
-  action: "idle" | "walk";
+  action: PlayerAction;
   direction: "north" | "south" | "east" | "west";
   size?: number;
   variant?: "player" | "npc";
@@ -22,27 +29,26 @@ export default function PlayerSprite({
 
   const isAnimatedPlayer =
     variant === "player" &&
-    ["knight", "mage"].includes(character);
+    ["knight", "mage", "ranger", "assassin", "cleric"].includes(character);
 
-  const totalFrames =
-    variant === "npc"
-      ? action === "idle" ? 4 : 8
-      : 4;
+  const totalFrames = variant === "npc"
+    ? action === "idle" ? 4 : 8
+    : 4;
 
-  const frameSpeed =
-    variant === "npc"
-      ? action === "idle" ? 540 : 110
-      : action === "idle" ? 700 : 160;
+  const frameSpeed = variant === "npc"
+    ? action === "idle" ? 540 : 110
+    : action === "idle" ? 700
+    : action === "walk" ? 160
+    : action === "attack" ? 100
+    : 120;
 
   useEffect(() => {
     setFrame(0);
 
-    // Player idle menggunakan frame pertama agar tidak bergeser
     if (isAnimatedPlayer && action === "idle") {
       return;
     }
 
-    // Karakter player yang belum punya animasi memakai gambar statis
     if (variant === "player" && !isAnimatedPlayer) {
       return;
     }
@@ -60,7 +66,6 @@ export default function PlayerSprite({
     isAnimatedPlayer,
   ]);
 
-  // PLAYER LIFEQUEST
   if (variant === "player") {
     const imagePath = isAnimatedPlayer
       ? `/sprites/animations/${character}/${action}/${direction}/${String(frame).padStart(3, "0")}.png`
