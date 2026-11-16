@@ -1,26 +1,134 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import PlayerSprite from "@/components/PlayerSprite";
 import CharacterSelection from "@/components/CharacterSelection";
+import NPC from "@/components/NPC";
+import type { CharacterId } from "@/types/character";
 
 const menuItems = [
-  { id: "characters", icon: "🛡️", name: "Character Hall" },
-  { id: "quests", icon: "📜", name: "Quest Board" },
-  { id: "blacksmith", icon: "⚒️", name: "Blacksmith" },
-  { id: "adventure", icon: "🚪", name: "Adventure Gate" },
+    { id: "characters", icon: "🛡️", name: "Character Hall" },
+    { id: "quests", icon: "📜", name: "Quest Board" },
+    { id: "blacksmith", icon: "⚒️", name: "Blacksmith" },
+    { id: "adventure", icon: "🚪", name: "Adventure Gate" },
 ];
 
 export default function Lobby() {
-  const [activeMenu, setActiveMenu] = useState("lobby");
+    const [activeMenu, setActiveMenu] = useState("lobby");
+    const [activeCharacter, setActiveCharacter] =
+    useState<CharacterId>("knight");
+    const [characterLoaded, setCharacterLoaded] = useState(false);
+    const [playerX, setPlayerX] = useState(50);
+    const [playerY, setPlayerY] = useState(78);
+    const [direction, setDirection] = useState<
+    "north" | "south" | "east" | "west"
+        >("south");
+    const [isMoving, setIsMoving] = useState(false);
+    const keysPressed = useRef(new Set<string>());
+    const playerSpriteCharacter =
+    activeCharacter === "assassin" ? "rogue" : activeCharacter;
+useEffect(() => {
+    const savedCharacter = localStorage.getItem("lifequest-character");
+    const validCharacters: CharacterId[] = [
+        "knight",
+        "mage",
+        "ranger",
+        "assassin",
+        "cleric",
+        ];
+    if (
+        savedCharacter &&
+        validCharacters.includes(savedCharacter as CharacterId)
+    ) {
+    setActiveCharacter(savedCharacter as CharacterId);
+    }
+    setCharacterLoaded(true);
+}, []);
 
-    if (activeMenu === "characters") {
-  return (
-    <CharacterSelection
-      onBack={() => setActiveMenu("lobby")}
-    />
-  );
+
+useEffect(() => {
+    if (characterLoaded) {
+        localStorage.setItem("lifequest-character", activeCharacter);
+    }
+    }, [activeCharacter, characterLoaded]);
+
+useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+        const key = event.key.toLowerCase();
+        if (
+            ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)
+        ) {
+        event.preventDefault();
+        keysPressed.current.add(key);
+        setIsMoving(true);
+    }
 }
 
+    function handleKeyUp(event: KeyboardEvent) {
+      keysPressed.current.delete(event.key.toLowerCase());
+
+      if (keysPressed.current.size === 0) {
+        setIsMoving(false);
+      }
+    }
+
+    function handleBlur() {
+      keysPressed.current.clear();
+      setIsMoving(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+
+    const movement = setInterval(() => {
+      const keys = keysPressed.current;
+      const speed = 0.35;
+
+      if (keys.has("w") || keys.has("arrowup")) {
+        setDirection("north");
+        setPlayerY((y) => Math.max(15, y - speed));
+      }
+
+      if (keys.has("s") || keys.has("arrowdown")) {
+        setDirection("south");
+        setPlayerY((y) => Math.min(85, y + speed));
+      }
+
+      if (keys.has("a") || keys.has("arrowleft")) {
+        setDirection("west");
+        setPlayerX((x) => Math.max(12, x - speed));
+      }
+
+      if (keys.has("d") || keys.has("arrowright")) {
+        setDirection("east");
+        setPlayerX((x) => Math.min(90, x + speed));
+      }
+    }, 16);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+      clearInterval(movement);
+    };
+  }, []);
+
+  // 4. Character Hall
+  if (activeMenu === "characters") {
+    return (
+      <CharacterSelection
+        activeCharacterId={activeCharacter}
+        onBack={() => setActiveMenu("lobby")}
+        onSelect={(characterId) => {
+          setActiveCharacter(characterId);
+          setActiveMenu("lobby");
+        }}
+      />
+    );
+  }
+
+  // 5. Lobby
   return (
     <main className="relative h-dvh w-screen overflow-hidden bg-[#172536] text-white">
 
@@ -32,6 +140,64 @@ export default function Lobby() {
         style={{ imageRendering: "pixelated" }}
       />
 
+      {/* PLAYER CHARACTER */}
+      <div
+        className="absolute z-[5]"
+        style={{
+          left: `${playerX}%`,
+          top: `${playerY}%`,
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <PlayerSprite
+  character={activeCharacter}
+  action={isMoving ? "walk" : "idle"}
+  direction={direction}
+  size={130}
+  variant="player"
+/>
+      </div>
+
+      {/* VILLAGE NPCs */}
+<NPC
+  character="mage"
+  playerCharacter={playerSpriteCharacter}
+  startX={35}
+  startY={45}
+  size={250}
+/>
+
+<NPC
+  character="ranger"
+  playerCharacter={playerSpriteCharacter}
+  startX={70}
+  startY={40}
+  size={250}
+/>
+
+<NPC
+  character="blacksmith"
+  playerCharacter={playerSpriteCharacter}
+  startX={65}
+  startY={72}
+  size={250}
+/>
+
+<NPC
+  character="cleric"
+  playerCharacter={playerSpriteCharacter}
+  startX={25}
+  startY={65}
+  size={250}
+/>
+
+<NPC
+  character="rogue"
+  playerCharacter={playerSpriteCharacter}
+  startX={80}
+  startY={60}
+  size={250}
+/>
       {/* ATMOSPHERE */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <span className="wind-leaf leaf-one">🍃</span>

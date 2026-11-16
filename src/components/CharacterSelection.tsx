@@ -5,50 +5,54 @@ import { characters, initialCharacterProgress } from "@/data/characters";
 import type { CharacterId } from "@/types/character";
 
 type CharacterSelectionProps = {
-  onBack: () => void;
+    onBack: () => void;
+    activeCharacterId: CharacterId;
+    onSelect: (characterId: CharacterId) => void;
 };
 
 export default function CharacterSelection({
-  onBack,
+    onBack,
+    activeCharacterId,
+    onSelect,
 }: CharacterSelectionProps) {
-  const [selectedCharacterId, setSelectedCharacterId] =
-    useState<CharacterId>("knight");
+    const [selectedCharacterId, setSelectedCharacterId] =
+    useState<CharacterId>(activeCharacterId);
 
-  const selectedCharacter = characters.find(
+    const selectedCharacter = characters.find(
     (character) => character.id === selectedCharacterId
-  );
+    );
 
-  const selectedProgress = initialCharacterProgress.find(
+    const selectedProgress = initialCharacterProgress.find(
     (progress) => progress.characterId === selectedCharacterId
-  );
+    );
 
-  return (
+return (
     <main className="min-h-screen overflow-hidden bg-[#100f1b] p-4 text-white md:p-8">
         <button
         onClick={onBack}
         className="mb-5 rounded-lg border border-yellow-500/40 bg-gray-800 px-4 py-2 text-sm font-bold text-yellow-300 transition hover:bg-yellow-500/20"
         >
-  ← BACK TO LOBBY
+← BACK TO LOBBY
 </button>
-      <header className="mb-10 border-b border-yellow-500/20 pb-6">
+    <header className="mb-10 border-b border-yellow-500/20 pb-6">
         <GemWallet gems={500} />
         <p className="text-sm uppercase tracking-[0.3em] text-purple-400">
-          LIFEQUEST
+            LIFEQUEST
         </p>
         <h1 className="mt-2 text-3xl font-black">
-          Choose Your Destiny
+            Choose Your Destiny
         </h1>
         <p className="mt-2 text-gray-400">
-          Select your adventurer and begin your journey.
+            Select your adventurer and begin your journey.
         </p>
-      </header>
+    </header>
 
       {/* CHARACTER LIST */}
-      
+
 <section className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-  {characters.map((character) => {
-    const progress = initialCharacterProgress.find(
-      (item) => item.characterId === character.id
+    {characters.map((character) => {
+        const progress = initialCharacterProgress.find(
+        (item) => item.characterId === character.id
     );
 
     const isUnlocked = progress?.isUnlocked ?? false;
@@ -116,13 +120,21 @@ export default function CharacterSelection({
             {selectedCharacter.description}
           </p>
 
-          <div className="my-8 flex justify-center rounded-xl bg-black/20 py-6">
-  <img
-    src={selectedCharacter.spritePath}
-    alt={selectedCharacter.name}
-    className="h-64 w-64 object-contain drop-shadow-[0_0_25px_rgba(168,85,247,0.35)]"
-  />
-</div>
+            <div className="my-8 flex justify-center rounded-xl bg-black/20 py-6">
+                <img
+                    src={selectedCharacter.spritePath}
+                    alt={selectedCharacter.name}
+                    className="h-64 w-64 object-contain drop-shadow-[0_0_25px_rgba(168,85,247,0.35)]"
+                />
+            </div>
+
+            <button
+  onClick={() => onSelect(selectedCharacterId)}
+  disabled={!selectedProgress.isUnlocked}
+  className="w-full rounded-xl border-2 border-yellow-400 bg-yellow-500 py-4 font-black tracking-widest text-gray-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"
+>
+  USE CHARACTER
+</button>
 
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
             {Object.entries(selectedCharacter.baseStats).map(

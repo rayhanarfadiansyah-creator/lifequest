@@ -88,3 +88,20 @@ body {
   animation: wind-drift 8s linear infinite !important;
   will-change: transform;
 }
+
+.mc-idle {
+  animation: knight-breathe 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes knight-breathe {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+  }
+
+  50% {
+    transform: translateY(-2px) scaleY(1.01);
+  }
+}
+
+
